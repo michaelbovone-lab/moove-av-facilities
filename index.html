@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moove AV — Facilities Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a23;
+    --surface2: #1e2330;
+    --border: #2a3045;
+    --accent: #5cffd6;
+    --accent2: #ff6b6b;
+    --accent3: #ffcc44;
+    --text: #e8ecf4;
+    --muted: #6b7591;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+
+  .logo span { color: var(--text); }
+
+  .tagline {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-left: 4px;
+  }
+
+  .header-right { margin-left: auto; }
+
+  .total-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .total-badge strong { color: var(--accent); }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    padding: 20px 32px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 340px;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px 9px 36px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus { border-color: var(--accent); }
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #0d0f14; font-weight: 500; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 28px 32px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    border-color: var(--accent);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    padding: 18px 20px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-name { font-family: var(--font-head); font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.1; }
+  .site-short { font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .badges { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+
+  .badge {
+    border-radius: 6px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .badge-status-Active      { background: rgba(92,255,214,0.12); color: var(--accent); border: 1px solid rgba(92,255,214,0.25); }
+  .badge-status-Construction{ background: rgba(255,204,68,0.12);  color: var(--accent3); border: 1px solid rgba(255,204,68,0.25); }
+  .badge-status-Confidential{ background: rgba(255,107,107,0.12); color: var(--accent2); border: 1px solid rgba(255,107,107,0.25); }
+  .badge-status-default     { background: rgba(107,117,145,0.15); color: var(--muted); border: 1px solid var(--border); }
+  .badge-type               { background: rgba(107,117,145,0.1);  color: var(--muted); border: 1px solid var(--border); }
+
+  .card-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+
+  .info-row { display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; }
+  .info-label { color: var(--muted); min-width: 68px; flex-shrink: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px; }
+  .info-value { color: var(--text); line-height: 1.4; }
+
+  .market-pill {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 8px;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+
+  .tasks-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+
+  .task-chip {
+    background: var(--surface2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10.5px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .card-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .contact-name { color: var(--text); font-size: 12px; }
+
+  .no-results { grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--muted); font-size: 14px; }
+
+  .detail-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    overflow-y: auto;
+    padding: 40px 20px;
+    backdrop-filter: blur(6px);
+  }
+
+  .detail-overlay.open { display: flex; justify-content: center; align-items: flex-start; }
+
+  .detail-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 640px;
+    overflow: hidden;
+    animation: fadeUp 0.25s ease;
+  }
+
+  .detail-head {
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .detail-title { font-family: var(--font-head); font-size: 26px; font-weight: 800; }
+
+  .close-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .close-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .detail-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; }
+  .detail-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 10px; }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .detail-item label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 2px; }
+  .detail-item span  { font-size: 13px; color: var(--text); line-height: 1.4; }
+
+  .detail-divider { border: none; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">MOOVE <span>AV</span></div>
+    <div class="tagline">Facilities Dashboard</div>
+  </div>
+  <div class="header-right">
+    <div class="total-badge" id="countBadge"><strong>9</strong> Sites</div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Search sites, cities, markets..." />
+  </div>
+  <div class="filter-group" id="marketFilters"></div>
+  <div class="filter-group" id="statusFilters"></div>
+  <div class="filter-group" id="typeFilters"></div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="detail-overlay" id="overlay">
+  <div class="detail-panel">
+    <div class="detail-head">
+      <div>
+        <div class="detail-title" id="dTitle"></div>
+        <div class="site-short" id="dShort"></div>
+      </div>
+      <button class="close-btn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-body" id="dBody"></div>
+  </div>
+</div>
+
+<script>
+const sites = [
+  {
+    name: "MESA", short: "MSC", longName: "PHOENIX CHANDLER - [560]", type: "Depot", market: "PHX",
+    address: "2166 W Broadway, Mesa, AZ 85202", status: "Active",
+    inService: "1/1/2021", lat: 33.409494, lng: -111.878825, eap: "560-PHX-MESA",
+    tasks: ["Cleaning","Deep Cleaning","Bio-cleaning","Flammable Chemical Storage","IPA Refill","Charging","WRA","Validation","Depot OPS","Stand Up Boards","Supervisor Offices","Training Classrooms","Break Space","Employee Parking","Employee Restroom","Meal Kitchen","Colo on Site","Colo Transfer","BFL Storage","Tech Garage"],
+    gm: "Matthew Keen", safetyMgr: "Michael Bovone", safetyPhone: "415-845-6445",
+    partner: "Waymo", leaseOwner: "Moove AV",
+    fire: "Mesa Fire & Medical Dept - Station 207\n2505 S Dobson Rd, Mesa, AZ 85202\n(480) 644-2101",
+    police: "Mesa Police Department\n130 N Robson, Mesa, AZ 85201\n(415) 671-2300",
+    hospital: "Banner Medical Center\n1400 S Dobson Rd, Mesa, AZ 85202\n(480) 412-3000",
+  },
+  {
+    name: "3rd St", short: "3SD", longName: "PHOENIX CHANDLER - [560]", type: "Depot", market: "PHX",
+    address: "1224 S 3rd Street, Phoenix, AZ 85004", status: "Active",
+    inService: "1/1/2023", lat: 33.436325, lng: -112.070017, eap: "560-PHX 3SD",
+    tasks: ["Cleaning","Deep Cleaning","Bio-cleaning","Flammable Chemical Storage","IPA Refill","Charging","WRA","Validation","Depot OPS","Stand Up Boards","Supervisor Offices","Training Classrooms","Break Space","Employee Parking","Employee Restroom","Meal Kitchen","Colo on Site","Colo Transfer","BFL Storage","Tech Garage"],
+    gm: "Matthew Keen", safetyMgr: "Michael Bovone", safetyPhone: "415-845-6446",
+    partner: "Waymo", leaseOwner: "Moove AV",
+    fire: "Mesa Fire & Medical Dept - Station 207\n(480) 644-2101",
+    police: "Mesa Police Department\n(415) 671-2300",
+    hospital: "Banner Medical Center\n(480) 412-3000",
+  },
+  {
+    name: "McDowell", short: "EMD", longName: "PHOENIX CHANDLER - [560]", type: "Pitstop", market: "PHX",
+    address: "8701 E McDowell Rd., Scottsdale, AZ 82527", status: "Active",
+    inService: "11/15/2024", lat: 33.465254, lng: -111.894450, eap: "560-PHX-MCDOWELL",
+    tasks: ["Cleaning"],
+    gm: "Matthew Keen", safetyMgr: "Michael Bovone", safetyPhone: "415-845-6447",
+    partner: "Waymo", leaseOwner: "Moove AV",
+    fire: "", police: "", hospital: "",
+  },
+  {
+    name: "Edge Connex", short: "ECX", longName: "PHOENIX CHANDLER - [560]", type: "Pitstop", market: "PHX",
+    address: "3011 S 52nd St, Tempe, AZ 85282", status: "Active",
+    inService: "1/1/2022", lat: 33.332685, lng: -111.969757, eap: "560-PHX-EDGE CONNEX",
+    tasks: ["Charging","Validation","Depot OPS","BFL Storage","Colo Transfer","Colo on Site","Employee Restroom","Employee Parking","Break Space","Flammable Chemical Storage","Cleaning","IPA Refill"],
+    gm: "Matthew Keen", safetyMgr: "Michael Bovone", safetyPhone: "415-845-6448",
+    partner: "Waymo", leaseOwner: "Moove AV",
+    fire: "", police: "", hospital: "",
+  },
+  {
+    name: "Terrace", short: "Terrace", longName: "WAYMO-MIA1 TERRACE", type: "Pitstop", market: "MIA",
+    address: "—", status: "Active", inService: "—", lat: null, lng: null, eap: "",
+    tasks: ["Charging","Validation","Depot OPS","BFL Storage","Colo Transfer","Colo on Site","Employee Restroom","Employee Parking","Break Space","Flammable Chemical Storage","Cleaning","IPA Refill"],
+    gm: "Jose Hernandez Garzon", safetyMgr: "Ian Barland", safetyPhone: "",
+    partner: "Waymo", leaseOwner: "Zoox",
+    fire: "", police: "", hospital: "",
+  },
+  {
+    name: "River", short: "River", longName: "WAYMO MIA2 RIVER", type: "Depot", market: "MIA",
+    address: "—", status: "Construction", inService: "—", lat: null, lng: null, eap: "",
+    tasks: [],
+    gm: "Jose Hernandez Garzon", safetyMgr: "Ian Barland", safetyPhone: "",
+    partner: "Waymo", leaseOwner: "Moove AV",
+    fire: "", police: "", hospital: "",
+  },
+  {
+    name: "7th", short: "7th", longName: "WAYMO MIA3 7th", type: "Pitstop", market: "MIA",
+    address: "—", status: "Confidential", inService: "—", lat: null, lng: null, eap: "",
+    tasks: [],
+    gm: "Jose Hernandez Garzon", safetyMgr: "Ian Barland", safetyPhone: "",
+    partner: "Waymo", leaseOwner: "Moove AV",
+    fire: "", police: "", hospital: "",
+  },
+  {
+    name: "Stealth", short: "STE", longName: "—", type: "—", market: "—",
+    address: "—", status: "—", inService: "—", lat: null, lng: null, eap: "",
+    tasks: [],
+    gm: "—", safetyMgr: "—", safetyPhone: "",
+    partner: "—", leaseOwner: "—",
+    fire: "", police: "", hospital: "",
+  },
+];
+
+let activeMarket = "All", activeStatus = "All", activeType = "All", searchQ = "";
+
+function statusClass(s) {
+  const map = {"Active":"badge-status-Active","Construction":"badge-status-Construction","Confidential":"badge-status-Confidential"};
+  return map[s] || "badge-status-default";
+}
+
+function makeFilters() {
+  const markets  = ["All", ...new Set(sites.map(s=>s.market).filter(m=>m&&m!=="—"))];
+  const statuses = ["All", ...new Set(sites.map(s=>s.status).filter(s=>s&&s!=="—"))];
+  const types    = ["All", ...new Set(sites.map(s=>s.type).filter(t=>t&&t!=="—"))];
+
+  document.getElementById('marketFilters').innerHTML = markets.map(v=>
+    `<button class="filter-btn ${activeMarket===v?'active':''}" onclick="setMarket('${v}')">${v}</button>`).join('');
+  document.getElementById('statusFilters').innerHTML = statuses.map(v=>
+    `<button class="filter-btn ${activeStatus===v?'active':''}" onclick="setStatus('${v}')">${v}</button>`).join('');
+  document.getElementById('typeFilters').innerHTML = types.map(v=>
+    `<button class="filter-btn ${activeType===v?'active':''}" onclick="setType('${v}')">${v}</button>`).join('');
+}
+
+window.setMarket = v => { activeMarket = v; render(); };
+window.setStatus = v => { activeStatus = v; render(); };
+window.setType   = v => { activeType   = v; render(); };
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQ = e.target.value.toLowerCase(); render();
+});
+
+function filtered() {
+  return sites.filter(s => {
+    const matchSearch = !searchQ || [s.name,s.short,s.longName,s.market,s.address,s.type,s.status,s.gm].join(' ').toLowerCase().includes(searchQ);
+    const matchMarket = activeMarket==="All" || s.market===activeMarket;
+    const matchStatus = activeStatus==="All" || s.status===activeStatus;
+    const matchType   = activeType==="All"   || s.type===activeType;
+    return matchSearch && matchMarket && matchStatus && matchType;
+  });
+}
+
+function render() {
+  makeFilters();
+  const data = filtered();
+  document.getElementById('countBadge').innerHTML = `<strong>${data.length}</strong> Sites`;
+  const grid = document.getElementById('grid');
+
+  if (!data.length) {
+    grid.innerHTML = '<div class="no-results">No sites match your filters.</div>';
+    return;
+  }
+
+  grid.innerHTML = data.map((s, i) => {
+    const statusCls = statusClass(s.status);
+    const shownTasks = s.tasks.slice(0, 4);
+    const moreTasks  = s.tasks.length - 4;
+    return `
+    <div class="card" style="animation-delay:${i*0.04}s" onclick="openDetail(${sites.indexOf(s)})">
+      <div class="card-header">
+        <div>
+          <div class="site-name">${s.name}</div>
+          <div class="site-short">${s.short} · ${s.longName}</div>
+        </div>
+        <div class="badges">
+          <span class="badge ${statusCls}">${s.status||'—'}</span>
+          ${s.type&&s.type!=='—'?`<span class="badge badge-type">${s.type}</span>`:''}
+        </div>
+      </div>
+      <div class="card-body">
+        ${s.market&&s.market!=='—'?`<div class="info-row"><span class="info-label">Market</span><span class="info-value"><span class="market-pill">${s.market}</span></span></div>`:''}
+        ${s.address&&s.address!=='—'?`<div class="info-row"><span class="info-label">Address</span><span class="info-value">${s.address}</span></div>`:''}
+        ${s.inService&&s.inService!=='—'?`<div class="info-row"><span class="info-label">In Service</span><span class="info-value">${s.inService}</span></div>`:''}
+        ${s.tasks.length?`
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;">On-Site Tasks</div>
+          <div class="tasks-list">
+            ${shownTasks.map(t=>`<span class="task-chip">${t}</span>`).join('')}
+            ${moreTasks>0?`<span class="task-chip" style="color:var(--accent)">+${moreTasks} more</span>`:''}
+          </div>
+        </div>`:''}
+      </div>
+      <div class="card-footer">
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">General Manager</div>
+          <div class="contact-name">${s.gm}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Partner</div>
+          <div class="contact-name">${s.partner}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.openDetail = idx => {
+  const s = sites[idx];
+  document.getElementById('dTitle').textContent = s.name;
+  document.getElementById('dShort').textContent = `${s.short} · ${s.longName}`;
+  const statusCls = statusClass(s.status);
+  document.getElementById('dBody').innerHTML = `
+    <div>
+      <div class="detail-section-title">Site Info</div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Status</label><span><span class="badge ${statusCls}">${s.status||'—'}</span></span></div>
+        <div class="detail-item"><label>Type</label><span>${s.type||'—'}</span></div>
+        <div class="detail-item"><label>Market</label><span>${s.market||'—'}</span></div>
+        <div class="detail-item"><label>In Service</label><span>${s.inService||'—'}</span></div>
+        <div class="detail-item" style="grid-column:1/-1"><label>Address</label><span>${s.address||'—'}</span></div>
+        <div class="detail-item"><label>Lease Owner</label><span>${s.leaseOwner||'—'}</span></div>
+        <div class="detail-item"><label>Partner</label><span>${s.partner||'—'}</span></div>
+        ${s.lat?`<div class="detail-item"><label>Latitude</label><span>${s.lat}</span></div><div class="detail-item"><label>Longitude</label><span>${s.lng}</span></div>`:''}
+        ${s.eap?`<div class="detail-item" style="grid-column:1/-1"><label>EAP</label><span>${s.eap}</span></div>`:''}
+      </div>
+    </div>
+    <hr class="detail-divider"/>
+    <div>
+      <div class="detail-section-title">Contacts</div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>General Manager</label><span>${s.gm||'—'}</span></div>
+        <div class="detail-item"><label>Safety Manager</label><span>${s.safetyMgr||'—'}${s.safetyPhone?`<br><span style="color:var(--muted)">${s.safetyPhone}</span>`:''}</span></div>
+      </div>
+    </div>
+    ${s.fire||s.police||s.hospital?`
+    <hr class="detail-divider"/>
+    <div>
+      <div class="detail-section-title">Emergency Services</div>
+      <div class="detail-grid">
+        ${s.fire?`<div class="detail-item" style="grid-column:1/-1"><label>🔥 Fire Department</label><span style="white-space:pre-line">${s.fire}</span></div>`:''}
+        ${s.police?`<div class="detail-item" style="grid-column:1/-1"><label>🚔 Police</label><span style="white-space:pre-line">${s.police}</span></div>`:''}
+        ${s.hospital?`<div class="detail-item" style="grid-column:1/-1"><label>🏥 Hospital</label><span style="white-space:pre-line">${s.hospital}</span></div>`:''}
+      </div>
+    </div>`:''}
+    ${s.tasks.length?`
+    <hr class="detail-divider"/>
+    <div>
+      <div class="detail-section-title">On-Site Tasks (${s.tasks.length})</div>
+      <div class="tasks-list">${s.tasks.map(t=>`<span class="task-chip">${t}</span>`).join('')}</div>
+    </div>`:''}
+  `;
+  document.getElementById('overlay').classList.add('open');
+};
+
+window.closeDetail = () => document.getElementById('overlay').classList.remove('open');
+
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target.id === 'overlay') closeDetail();
+});
+
+render();
+</script>
+</body>
+</html>
