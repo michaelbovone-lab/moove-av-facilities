@@ -394,8 +394,12 @@
 <div id="pirView" style="display:none">
   <div class="pir-wrap">
     <div class="pir-intro">
-      Prohibited Item Recovery contacts by type. Each PIR lists every facility and the vendor / responder it routes to.
-      Where a facility hasn't set a dedicated PIR vendor yet, it shows <span class="pir-unset">not set</span> — fill these in as vendors are assigned.
+      Prohibited Item Recovery lookup contacts. Where a facility hasn't set a dedicated PIR vendor yet, it shows <span class="pir-unset">not set</span> — fill these in as vendors are assigned.
+    </div>
+    <div class="filter-group" style="margin-bottom:18px">
+      <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;align-self:center;margin-right:4px">Group by</span>
+      <button class="filter-btn active" id="pirGB-location" onclick="setPirGroup('location')">Location</button>
+      <button class="filter-btn" id="pirGB-type" onclick="setPirGroup('type')">PIR Type</button>
     </div>
     <div id="pirGroups"></div>
   </div>
@@ -654,7 +658,40 @@ function pirValue(s, t) {
   return "";
 }
 const pirSites = () => sites.filter(s => s.name && s.name !== "—");
-function renderPir() {
+const CHEVRON = '<svg class="pir-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>';
+let pirGroupMode = 'location';
+
+// Grouped by LOCATION: each facility lists its PIR lookup contacts.
+function renderPirByLocation() {
+  const list = pirSites();
+  document.getElementById('pirGroups').innerHTML = list.map((s, i) => {
+    const rows = PIR_TYPES.map(t => {
+      const v = pirValue(s, t);
+      return `<tr>
+        <td class="pir-fac"><span style="margin-right:6px">${t.icon}</span>${t.label}<small>${t.contact}</small></td>
+        <td class="pir-value">${v ? v : '<span class="pir-unset">— not set —</span>'}</td>
+      </tr>`;
+    }).join('');
+    const setCount = PIR_TYPES.filter(t => pirValue(s, t)).length;
+    return `<div class="pir-group" id="pl-${i}">
+      <div class="pir-group-head" onclick="document.getElementById('pl-${i}').classList.toggle('collapsed')">
+        <div>
+          <div class="pir-name">${s.name}</div>
+          <div class="pir-sub">${s.short}${s.market&&s.market!=='—'?' · '+s.market:''}${s.type&&s.type!=='—'?' · '+s.type:''}</div>
+        </div>
+        <span class="pir-count">${setCount}/${PIR_TYPES.length} set</span>
+        ${CHEVRON}
+      </div>
+      <table class="pir-table">
+        <thead><tr><th>PIR type</th><th>PIR contact / vendor</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+// Grouped by PIR TYPE: each PIR lists every facility and its contact.
+function renderPirByType() {
   const list = pirSites();
   document.getElementById('pirGroups').innerHTML = PIR_TYPES.map(t => {
     const rows = list.map(s => {
@@ -675,7 +712,7 @@ function renderPir() {
           <div class="pir-sub">${t.contact}</div>
         </div>
         <span class="pir-count">${setCount}/${list.length} set</span>
-        <svg class="pir-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        ${CHEVRON}
       </div>
       <table class="pir-table">
         <thead><tr><th>Facility</th><th>Market</th><th>Type</th><th>PIR contact / vendor</th></tr></thead>
@@ -684,6 +721,18 @@ function renderPir() {
     </div>`;
   }).join('');
 }
+
+function renderPirDir() {
+  if (pirGroupMode === 'location') renderPirByLocation(); else renderPirByType();
+  const n = pirGroupMode === 'location' ? pirSites().length : PIR_TYPES.length;
+  document.getElementById('countBadge').innerHTML = `<strong>${n}</strong> ${pirGroupMode === 'location' ? 'Facilities' : 'PIR Types'}`;
+}
+window.setPirGroup = mode => {
+  pirGroupMode = mode;
+  document.getElementById('pirGB-location').classList.toggle('active', mode === 'location');
+  document.getElementById('pirGB-type').classList.toggle('active', mode === 'type');
+  renderPirDir();
+};
 
 /* ── Nav / view switching ── */
 window.openNav  = () => { document.getElementById('navDrawer').classList.add('open'); document.getElementById('navBackdrop').classList.add('open'); };
@@ -696,7 +745,7 @@ window.showView = view => {
   document.getElementById('nav-pir').classList.toggle('active', !fac);
   document.getElementById('viewTagline').textContent = fac ? 'Facilities Dashboard' : 'PIR Directory';
   if (fac) { render(); }
-  else { renderPir(); document.getElementById('countBadge').innerHTML = `<strong>${PIR_TYPES.length}</strong> PIR Types`; }
+  else { renderPirDir(); }
   window.closeNav();
 };
 
