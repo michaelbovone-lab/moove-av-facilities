@@ -501,10 +501,14 @@ function statusClass(s) {
   return map[s] || "badge-status-default";
 }
 
+// Canonical Site Types — always offered in the Type filter even before any
+// site is tagged with them (union'd with whatever types the data actually uses).
+const SITE_TYPES = ["Depot", "Pitstop", "Off-hail"];
+
 function makeFilters() {
   const markets  = ["All", ...new Set(sites.map(s=>s.market).filter(m=>m&&m!=="—"))];
   const statuses = ["All", ...new Set(sites.map(s=>s.status).filter(s=>s&&s!=="—"))];
-  const types    = ["All", ...new Set(sites.map(s=>s.type).filter(t=>t&&t!=="—"))];
+  const types    = ["All", ...new Set([...SITE_TYPES, ...sites.map(s=>s.type).filter(t=>t&&t!=="—")])];
 
   document.getElementById('marketFilters').innerHTML = markets.map(v=>
     `<button class="filter-btn ${activeMarket===v?'active':''}" onclick="setMarket('${v}')">${v}</button>`).join('');
