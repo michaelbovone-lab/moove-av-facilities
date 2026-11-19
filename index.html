@@ -345,6 +345,13 @@
   .pir-value { white-space: pre-line; }
   .pir-unset { color: var(--muted); font-style: italic; }
   .pir-mkt { display:inline-block; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 8px; font-size: 11px; color: var(--accent); }
+
+  /* ── CNA Directory ── */
+  .cna-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .cna-select { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: var(--font-mono); font-size: 13px; min-width: 260px; cursor: pointer; }
+  .cna-select:focus { outline: none; border-color: var(--accent); }
+  .cna-kind { display: inline-block; border: 1px solid var(--border); border-radius: 20px; padding: 2px 10px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+  .cna-net { display:inline-block; background: var(--surface2); border:1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 1px 8px; font-size: 10.5px; letter-spacing: 0.04em; }
 </style>
 </head>
 <body>
@@ -360,6 +367,10 @@
   <div class="nav-item" id="nav-pir" onclick="showView('pir')">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-4Z"/><path d="M9 12l2 2 4-4"/></svg>
     PIR Directory
+  </div>
+  <div class="nav-item" id="nav-cna" onclick="showView('cna')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-4Z"/><path d="M12 8v8M8 12h8"/></svg>
+    CNA Directory
   </div>
 </nav>
 
@@ -402,6 +413,20 @@
       <button class="filter-btn" id="pirGB-type" onclick="setPirGroup('type')">PIR Type</button>
     </div>
     <div id="pirGroups"></div>
+  </div>
+</div>
+
+<!-- ── CNA Directory view ── -->
+<div id="cnaView" style="display:none">
+  <div class="pir-wrap">
+    <div class="pir-intro">
+      CNA in-network medical providers for workers'-comp &amp; occupational injuries, looked up by facility ZIP through the CNA (Perspecta) provider search. Pick a facility to see its nearby in-network clinics, hospitals, urgent-care and occupational-health offices. Where none are listed yet, they haven't been pulled from the CNA search — <span class="pir-unset">fill these in</span> as they're captured.
+    </div>
+    <div class="cna-controls">
+      <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Facility</span>
+      <select class="cna-select" id="cnaSelect" onchange="setCnaFacility(this.value)"></select>
+    </div>
+    <div id="cnaGroups"></div>
   </div>
 </div>
 
@@ -738,18 +763,94 @@ window.setPirGroup = mode => {
   renderPirDir();
 };
 
+/* ── CNA Directory ──
+   CNA is the workers'-comp / occupational-medicine insurance carrier. For each
+   facility we list the in-network clinics, hospitals, urgent-care and occ-health
+   offices from the CNA (Perspecta) provider search, looked up by the facility ZIP.
+   To populate: add an entry to cnaProviders keyed by the facility SHORT code, e.g.
+     cnaProviders["MSC"] = [
+       { name:"Banner Urgent Care", kind:"Urgent Care", address:"... Mesa, AZ 85202",
+         phone:"(480) 555-0100", distance:"1.2 mi" },
+       ...
+     ];
+   kind ∈ "Hospital" | "Urgent Care" | "Clinic" | "Occ Health" | "Office"           */
+const CNA_KINDS = {
+  "Hospital":    { icon:"🏥", color:"var(--accent2)" },
+  "Urgent Care": { icon:"🚑", color:"var(--accent3)" },
+  "Clinic":      { icon:"🩺", color:"var(--accent)"  },
+  "Occ Health":  { icon:"🦺", color:"var(--accent)"  },
+  "Office":      { icon:"🏢", color:"var(--muted)"   },
+};
+const cnaProviders = {
+  // Filled from the CNA / Perspecta provider search, keyed by facility short code.
+};
+const zipOf = s => { const m = String(s.address||"").match(/(\d{5})(?:-\d{4})?\s*$/); return m ? m[1] : ""; };
+const cnaSites = () => sites.filter(s => s.name && s.name !== "—");
+let cnaFacility = "__all__";
+window.setCnaFacility = v => { cnaFacility = v; renderCnaDir(); };
+
+function cnaProviderRows(s) {
+  const list = cnaProviders[s.short] || [];
+  if (!list.length) return `<tr><td colspan="4"><span class="pir-unset">— no in-network providers pulled yet —</span></td></tr>`;
+  return list.map(p => {
+    const k = CNA_KINDS[p.kind] || CNA_KINDS["Office"];
+    return `<tr>
+      <td class="pir-fac"><span style="margin-right:6px">${k.icon}</span>${p.name}${p.distance?`<small>${p.distance}</small>`:''}</td>
+      <td><span class="cna-kind" style="color:${k.color};border-color:${k.color}">${p.kind||'Office'}</span></td>
+      <td class="pir-value">${p.address||'—'}</td>
+      <td class="pir-value">${p.phone||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function cnaGroup(s) {
+  const zip = zipOf(s);
+  const count = (cnaProviders[s.short]||[]).length;
+  return `<div class="pir-group" id="cna-${s.short}">
+    <div class="pir-group-head" onclick="document.getElementById('cna-${s.short}').classList.toggle('collapsed')">
+      <div>
+        <div class="pir-name">${s.name}</div>
+        <div class="pir-sub">${s.short}${s.market&&s.market!=='—'?' · '+s.market:''} · ${zip?('ZIP '+zip):'no ZIP on file'}</div>
+      </div>
+      <span class="pir-count">${count} in-network</span>
+      ${CHEVRON}
+    </div>
+    <table class="pir-table">
+      <thead><tr><th>Provider</th><th>Type</th><th>Address</th><th>Phone</th></tr></thead>
+      <tbody>${cnaProviderRows(s)}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderCnaDir() {
+  const all = cnaSites();
+  const sel = document.getElementById('cnaSelect');
+  if (sel && !sel.dataset.filled) {
+    sel.innerHTML = `<option value="__all__">All facilities</option>` +
+      all.map(s => `<option value="${s.short}">${s.name} — ${s.short}${zipOf(s)?' ('+zipOf(s)+')':''}</option>`).join('');
+    sel.dataset.filled = "1";
+  }
+  const list = cnaFacility === "__all__" ? all : all.filter(s => s.short === cnaFacility);
+  document.getElementById('cnaGroups').innerHTML = list.map(cnaGroup).join('');
+  const totalProv = all.reduce((n,s)=>n+((cnaProviders[s.short]||[]).length),0);
+  document.getElementById('countBadge').innerHTML = `<strong>${totalProv}</strong> CNA Providers`;
+}
+
 /* ── Nav / view switching ── */
 window.openNav  = () => { document.getElementById('navDrawer').classList.add('open'); document.getElementById('navBackdrop').classList.add('open'); };
 window.closeNav = () => { document.getElementById('navDrawer').classList.remove('open'); document.getElementById('navBackdrop').classList.remove('open'); };
 window.showView = view => {
-  const fac = view === 'facilities';
-  document.getElementById('facilitiesView').style.display = fac ? '' : 'none';
-  document.getElementById('pirView').style.display = fac ? 'none' : '';
-  document.getElementById('nav-facilities').classList.toggle('active', fac);
-  document.getElementById('nav-pir').classList.toggle('active', !fac);
-  document.getElementById('viewTagline').textContent = fac ? 'Facilities Dashboard' : 'PIR Directory';
-  if (fac) { render(); }
-  else { renderPirDir(); }
+  const views = { facilities: 'facilitiesView', pir: 'pirView', cna: 'cnaView' };
+  if (!views[view]) view = 'facilities';
+  Object.entries(views).forEach(([k, id]) => { document.getElementById(id).style.display = (k === view) ? '' : 'none'; });
+  document.getElementById('nav-facilities').classList.toggle('active', view === 'facilities');
+  document.getElementById('nav-pir').classList.toggle('active', view === 'pir');
+  document.getElementById('nav-cna').classList.toggle('active', view === 'cna');
+  const taglines = { facilities: 'Facilities Dashboard', pir: 'PIR Directory', cna: 'CNA Directory' };
+  document.getElementById('viewTagline').textContent = taglines[view];
+  if (view === 'facilities') render();
+  else if (view === 'pir') renderPirDir();
+  else renderCnaDir();
   window.closeNav();
 };
 
