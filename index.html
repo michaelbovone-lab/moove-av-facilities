@@ -781,9 +781,57 @@ const CNA_KINDS = {
   "Occ Health":  { icon:"🦺", color:"var(--accent)"  },
   "Office":      { icon:"🏢", color:"var(--muted)"   },
 };
-const cnaProviders = {
-  // Filled from the CNA / Perspecta provider search, keyed by facility short code.
-};
+const cnaProviders = {};
+// Filled from the CNA / Perspecta provider search (looked up by facility ZIP), keyed by facility short code.
+cnaProviders["MSC"] = [
+  { name:"Banner Desert Medical Center", kind:"Hospital", address:"1400 S Dobson Rd, Mesa, AZ 85202", phone:"(480) 412-3000", distance:"0.7 mi" },
+  { name:"Concentra Medical Center", kind:"Occ Health", address:"1710 W Southern Ave, Mesa, AZ 85202", phone:"(480) 644-7900", distance:"1.1 mi" },
+  { name:"MBI Industrial Medicine", kind:"Occ Health", address:"1440 S Country Club Dr, Mesa, AZ 85210", phone:"(480) 629-5592", distance:"2.1 mi" },
+  { name:"Banner Urgent Care - McClintock & Southern", kind:"Urgent Care", address:"3141 S McClintock Dr, Ste 1, Tempe, AZ 85282", phone:"(480) 827-5650", distance:"2.2 mi" },
+  { name:"Dignity Health Arizona General Hospital - Tempe", kind:"Hospital", address:"5125 S Rural Rd, Tempe, AZ 85282", phone:"(480) 306-8780", distance:"3.1 mi" },
+  { name:"HonorHealth Urgent Care - Mesa - W University Dr", kind:"Urgent Care", address:"835 University Dr, Mesa, AZ 85201", phone:"(480) 664-6007", distance:"3.3 mi" },
+  { name:"Banner Urgent Care - Rural & Elliot", kind:"Urgent Care", address:"931 E Elliot Rd, Ste 115, Tempe, AZ 85284", phone:"(480) 827-5640", distance:"3.7 mi" },
+  { name:"Banner Occupational Health", kind:"Occ Health", address:"1979 W Ray Rd, Chandler, AZ 85224", phone:"(480) 827-5685", distance:"4.1 mi" },
+  { name:"Mountain Vista Medical Center", kind:"Hospital", address:"515 N Mesa Dr, Mesa, AZ 85201", phone:"(480) 358-6100", distance:"4.4 mi" },
+  { name:"Tempe St Luke's Hospital", kind:"Hospital", address:"1500 S Mill Ave, Tempe, AZ 85281", phone:"(480) 784-5500", distance:"4.5 mi" }
+];
+cnaProviders["3SD"] = [
+  { name:"Banner Urgent Care - Central & Washington", kind:"Urgent Care", address:"1 N Central Ave, Ste 105, Phoenix, AZ 85004", phone:"(602) 255-7650", distance:"0.4 mi" },
+  { name:"Banner University Medical Center Phoenix", kind:"Hospital", address:"1111 E McDowell Rd, Phoenix, AZ 85006", phone:"(602) 839-2000", distance:"1.0 mi" },
+  { name:"Banner Occupational Health Clinic (Good Samaritan)", kind:"Occ Health", address:"1300 N 12th St, Ste 520, Phoenix, AZ 85006", phone:"(602) 839-4456", distance:"1.0 mi" },
+  { name:"Aim Clinic", kind:"Clinic", address:"515 N 18th St, Phoenix, AZ 85006", phone:"(602) 470-0021", distance:"1.4 mi" },
+  { name:"Concentra Medical Center", kind:"Occ Health", address:"1818 E Sky Harbor Cir N, Bldg 2, Phoenix, AZ 85034", phone:"(602) 244-9500", distance:"1.7 mi" },
+  { name:"St. Joseph's Hospital and Medical Center", kind:"Hospital", address:"350 W Thomas Rd, Phoenix, AZ 85013", phone:"(602) 406-3000", distance:"2.1 mi" },
+  { name:"NextCare Urgent Care - Thomas", kind:"Urgent Care", address:"1701 E Thomas Rd, Ste A104, Phoenix, AZ 85016", phone:"(602) 845-4445", distance:"2.3 mi" },
+  { name:"Valleywise Health Medical Center", kind:"Hospital", address:"2601 E Roosevelt St, Phoenix, AZ 85008", phone:"(602) 344-5011", distance:"2.5 mi" },
+  { name:"Banner Urgent Care - N 7th St", kind:"Urgent Care", address:"5018 N 7th St, Phoenix, AZ 85014", phone:"(602) 255-7680", distance:"3.9 mi" },
+  { name:"Concentra Medical Center", kind:"Occ Health", address:"3532 W Thomas Rd, Ste 5, Phoenix, AZ 85019", phone:"(602) 272-7662", distance:"4.3 mi" },
+  { name:"MBI Industrial Medicine", kind:"Occ Health", address:"3501 W Osborn Rd, Phoenix, AZ 85019", phone:"(602) 272-7676", distance:"4.5 mi" }
+];
+cnaProviders["EMD"] = [
+  { name:"HonorHealth Urgent Care - Scottsdale - McDowell Rd", kind:"Urgent Care", address:"7730 E McDowell Rd, Ste 101, Scottsdale, AZ 85257", phone:"(480) 699-3314", distance:"0.3 mi" },
+  { name:"NextCare Urgent Care - Oak", kind:"Urgent Care", address:"2122 N Scottsdale Rd, Scottsdale, AZ 85257", phone:"(480) 889-3570", distance:"1.0 mi" },
+  { name:"HonorHealth Scottsdale Osborn Medical Center", kind:"Hospital", address:"7400 E Osborn Rd, Scottsdale, AZ 85251", phone:"(480) 882-4000", distance:"1.6 mi" },
+  { name:"HonorHealth Occupational Medicine", kind:"Occ Health", address:"3501 N Scottsdale Rd, Ste 231, Scottsdale, AZ 85251", phone:"(480) 882-4934", distance:"1.6 mi" },
+  { name:"NextCare Urgent Care - Curry", kind:"Urgent Care", address:"914 N Scottsdale Rd, Ste 104, Tempe, AZ 85288", phone:"(480) 931-3092", distance:"2.2 mi" },
+  { name:"HonorHealth Urgent Care - Tempe ASU", kind:"Urgent Care", address:"725 S Rural Rd, Ste 120, Tempe, AZ 85288", phone:"(480) 214-0622", distance:"3.3 mi" },
+  { name:"Tempe St Luke's Hospital", kind:"Hospital", address:"1500 S Mill Ave, Tempe, AZ 85281", phone:"(480) 784-5500", distance:"4.3 mi" },
+  { name:"HonorHealth Urgent Care - Phoenix", kind:"Urgent Care", address:"4501 E Thomas Rd, Ste 101, Phoenix, AZ 85018", phone:"(602) 808-8786", distance:"4.3 mi" },
+  { name:"Concentra Medical Center", kind:"Occ Health", address:"1626 S Priest Dr, Tempe, AZ 85281", phone:"(480) 921-2273", distance:"5.0 mi" },
+  { name:"Concentra Medical Center", kind:"Occ Health", address:"950 W Southern Ave, Tempe, AZ 85282", phone:"(480) 968-7200", distance:"5.7 mi" }
+];
+cnaProviders["ECX"] = [
+  { name:"HonorHealth Urgent Care - Tempe - Mill Ave", kind:"Urgent Care", address:"3244 Mill Ave, Ste 101, Tempe, AZ 85282", phone:"(480) 214-0621", distance:"0.4 mi" },
+  { name:"Dignity Health Arizona General Hospital - Tempe", kind:"Hospital", address:"5125 S Rural Rd, Tempe, AZ 85282", phone:"(480) 306-8780", distance:"0.8 mi" },
+  { name:"Concentra Medical Center", kind:"Occ Health", address:"950 W Southern Ave, Tempe, AZ 85282", phone:"(480) 968-7200", distance:"1.0 mi" },
+  { name:"Banner Urgent Care - McClintock & Southern", kind:"Urgent Care", address:"3141 S McClintock Dr, Ste 1, Tempe, AZ 85282", phone:"(480) 827-5650", distance:"1.5 mi" },
+  { name:"Tempe St Luke's Hospital", kind:"Hospital", address:"1500 S Mill Ave, Tempe, AZ 85281", phone:"(480) 784-5500", distance:"1.6 mi" },
+  { name:"Concentra Medical Center", kind:"Occ Health", address:"1626 S Priest Dr, Tempe, AZ 85281", phone:"(480) 921-2273", distance:"2.1 mi" },
+  { name:"HonorHealth Urgent Care - Tempe ASU", kind:"Urgent Care", address:"725 S Rural Rd, Ste 120, Tempe, AZ 85288", phone:"(480) 214-0622", distance:"2.3 mi" },
+  { name:"Banner Urgent Care - Rural & Elliot", kind:"Urgent Care", address:"931 E Elliot Rd, Ste 115, Tempe, AZ 85284", phone:"(480) 827-5640", distance:"2.9 mi" },
+  { name:"Banner Desert Medical Center", kind:"Hospital", address:"1400 S Dobson Rd, Mesa, AZ 85202", phone:"(480) 412-3000", distance:"3.3 mi" },
+  { name:"MBI Industrial Medicine", kind:"Occ Health", address:"4013 E Broadway Rd, Ste A, Phoenix, AZ 85040", phone:"(602) 437-0234", distance:"3.6 mi" }
+];
 const zipOf = s => { const m = String(s.address||"").match(/(\d{5})(?:-\d{4})?\s*$/); return m ? m[1] : ""; };
 const cnaSites = () => sites.filter(s => s.name && s.name !== "—");
 let cnaFacility = "__all__";
